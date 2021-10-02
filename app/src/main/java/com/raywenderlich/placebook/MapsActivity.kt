@@ -6,8 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -23,6 +22,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +88,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             PackageManager.PERMISSION_GRANTED) {
             // requests permissions if needed
             requestLocationPermissions()
-        } else {
+        }
+        else {
+            map.isMyLocationEnabled = true
             // 3
             fusedLocationClient.lastLocation.addOnCompleteListener {
                 val location = it.result
@@ -96,9 +98,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // create latlng
                     val latLng = LatLng(location.latitude,
                         location.longitude)
-                    // 5
-                    map.addMarker(MarkerOptions().position(latLng)
-                        .title("You are here!"))
+
                     // cameraupdate object
                     val update = CameraUpdateFactory.newLatLngZoom(latLng,
                         16.0f)
