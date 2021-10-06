@@ -3,7 +3,6 @@ package com.raywenderlich.placebook.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-class Bookmark {
     // makes database
     @Entity
     // constructor
@@ -18,4 +17,3 @@ class Bookmark {
         var longitude: Double = 0.0,
         var phone: String = ""
     )
-}

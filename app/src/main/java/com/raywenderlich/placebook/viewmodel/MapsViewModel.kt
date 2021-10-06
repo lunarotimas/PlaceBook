@@ -3,10 +3,10 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.google.android.libraries.places.api.model.Place
+import com.raywenderlich.placebook.repository.BookmarkRepo
 
-// 1
-class MapsViewModel(application: Application) :
-    AndroidViewModel(application) {
+    // 1
+class MapsViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MapsViewModel"
     // 2
     private val bookmarkRepo: BookmarkRepo = BookmarkRepo(
