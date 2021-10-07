@@ -37,16 +37,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
     private lateinit var placesClient: PlacesClient
-    private lateinit var binding: ActivityMapsBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
     private val mapsViewModel by viewModels<MapsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding = ActivityMapsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_maps)
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
@@ -84,8 +80,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun setupPlacesClient() {
         Places.initialize(
-            applicationContext,
-            getString(R.string.google_maps_key)
+            applicationContext, getString(R.string.google_maps_key)
         )
         placesClient = Places.createClient(this)
     }
@@ -109,6 +104,84 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this)
     }
+
+    private fun displayPoi(pointOfInterest: PointOfInterest) {
+        // 1
+        displayPoiGetPlaceStep(pointOfInterest)
+    }
+
+    private fun displayPoiGetPlaceStep(pointOfInterest: PointOfInterest) {
+        val placeId = pointOfInterest.placeId
+        // 2
+        val placeFields = listOf(
+            Place.Field.ID,
+            Place.Field.NAME,
+            Place.Field.PHONE_NUMBER,
+            Place.Field.PHOTO_METADATAS,
+            Place.Field.ADDRESS,
+            Place.Field.LAT_LNG
+        )
+        // 3
+        val request = FetchPlaceRequest
+            .builder(placeId, placeFields)
+            .build()
+        // 4
+        placesClient.fetchPlace(request)
+            .addOnSuccessListener { response ->
+                // 5
+                val place = response.place
+                displayPoiGetPhotoStep(place)
+            }.addOnFailureListener { exception ->
+                // 6
+                if (exception is ApiException) {
+                    val statusCode = exception.statusCode
+                    Log.e(
+                        TAG,
+                        "Place not found: " +
+                                exception.message + ", " +
+                                "statusCode: " + statusCode
+                    )
+                }
+            }
+    }
+
+    private fun displayPoiGetPhotoStep(place: Place) {
+        // grab photo from metadata of selected place
+        val photoMetadata = place.photoMetadatas?.get(0)
+        // if no photo, skip
+        if (photoMetadata == null) {
+            displayPoiDisplayStep(place, null)
+            return
+        }
+        //pass the image and size
+        val photoRequest = FetchPhotoRequest.builder(photoMetadata)
+            .setMaxWidth(resources.getDimensionPixelSize(
+                R.dimen.default_image_width
+            )
+            )
+            .setMaxHeight(resources.getDimensionPixelSize(
+                R.dimen.default_image_height
+            )
+            )
+            .build()
+        // 4
+        placesClient.fetchPhoto(photoRequest)
+            .addOnSuccessListener { fetchPhotoResponse ->
+                val bitmap = fetchPhotoResponse.bitmap
+                displayPoiDisplayStep(place, bitmap)
+            }.addOnFailureListener { exception ->
+                if (exception is ApiException) {
+                    val statusCode = exception.statusCode
+                    Log.e(
+                        TAG,
+                        "Place not found: " +
+                                exception.message + ", " +
+                                "statusCode: " + statusCode
+                    )
+                }
+            }
+    }
+
 
     private fun requestLocationPermissions() {
         ActivityCompat.requestPermissions(
@@ -156,82 +229,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun displayPoi(pointOfInterest: PointOfInterest) {
-        // 1
-        displayPoiGetPlaceStep(pointOfInterest)
-    }
 
-    private fun displayPoiGetPlaceStep(pointOfInterest: PointOfInterest) {
-        val placeId = pointOfInterest.placeId
-        // 2
-        val placeFields = listOf(
-            Place.Field.ID,
-            Place.Field.NAME,
-            Place.Field.PHONE_NUMBER,
-            Place.Field.PHOTO_METADATAS,
-            Place.Field.ADDRESS,
-            Place.Field.LAT_LNG
-        )
-        // 3
-        val request = FetchPlaceRequest
-            .builder(placeId, placeFields)
-            .build()
-        // 4
-        placesClient.fetchPlace(request)
-            .addOnSuccessListener { response ->
-                // 5
-                val place = response.place
-                displayPoiGetPhotoStep(place)
-            }.addOnFailureListener { exception ->
-                // 6
-                if (exception is ApiException) {
-                    val statusCode = exception.statusCode
-                    Log.e(
-                        TAG,
-                        "Place not found: " +
-                                exception.message + ", " +
-                                "statusCode: " + statusCode
-                    )
-                }
-            }
-    }
 
-    private fun displayPoiGetPhotoStep(place: Place) {
-        // grab photo from metadata of selected place
-        val photoMetadata = place.getPhotoMetadatas()?.get(0)
-        // if no photo, skip
-        if (photoMetadata == null) {
-            displayPoiDisplayStep(place, null)
-            return
-        }
-        //pass the image and size
-        val photoRequest = FetchPhotoRequest.builder(photoMetadata)
-            .setMaxWidth(resources.getDimensionPixelSize(
-                R.dimen.default_image_width
-                )
-            )
-            .setMaxHeight(resources.getDimensionPixelSize(
-                R.dimen.default_image_height
-                )
-            )
-            .build()
-        // 4
-        placesClient.fetchPhoto(photoRequest)
-            .addOnSuccessListener { fetchPhotoResponse ->
-                val bitmap = fetchPhotoResponse.bitmap
-                displayPoiDisplayStep(place, bitmap)
-            }.addOnFailureListener { exception ->
-                if (exception is ApiException) {
-                    val statusCode = exception.statusCode
-                    Log.e(
-                        TAG,
-                        "Place not found: " +
-                                exception.message + ", " +
-                                "statusCode: " + statusCode
-                    )
-                }
-            }
-    }
+
+
 
     private fun displayPoiDisplayStep(place: Place, photo: Bitmap?)
     {

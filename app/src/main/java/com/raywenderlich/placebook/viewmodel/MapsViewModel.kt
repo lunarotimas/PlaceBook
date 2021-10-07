@@ -9,8 +9,7 @@ import com.raywenderlich.placebook.repository.BookmarkRepo
 class MapsViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MapsViewModel"
     // 2
-    private val bookmarkRepo: BookmarkRepo = BookmarkRepo(
-        getApplication())
+    private val bookmarkRepo: BookmarkRepo = BookmarkRepo(getApplication())
     // 3
     fun addBookmarkFromPlace(place: Place, image: Bitmap?) {
         // 4
