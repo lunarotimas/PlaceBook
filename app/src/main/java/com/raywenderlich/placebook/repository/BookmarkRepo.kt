@@ -1,8 +1,10 @@
 package com.raywenderlich.placebook.repository
 
-import BookmarkDao
+
+
 import android.content.Context
 import androidx.lifecycle.LiveData
+import com.raywenderlich.placebook.db.BookmarkDao
 import com.raywenderlich.placebook.model.Bookmark
 
 
